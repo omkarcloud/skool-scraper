@@ -49,6 +49,7 @@ import config
 import egress
 from scraper_errors import BadRequest, Blocked, NotFound, UpstreamError
 from skool.refs import API, SITE
+from scraper_utils import sessions
 
 IMPERSONATE = "chrome"
 PAGE_TIMEOUT = 30     # feed / member pages are 300-600 KB
@@ -122,13 +123,7 @@ def _session():
 def _drop_session():
     """Close the thread's session so a poisoned keep-alive connection dies
     and the retry rides a fresh exit."""
-    sess = getattr(_local, "session", None)
-    _local.session = None
-    if sess is not None:
-        try:
-            sess.close()
-        except Exception:
-            pass
+    sessions.drop(_local)
 
 
 def _retrying(fn):

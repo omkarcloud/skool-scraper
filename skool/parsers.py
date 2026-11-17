@@ -23,11 +23,13 @@ reviews), AI Money Hub (reviewed public), the discovery directory, a post
 page, api2 comment pages, a profile with followers / following, members,
 leaderboards, classroom + course, calendar and in-community search.
 """
-import json
+import fastjson
 import re
 from datetime import datetime, timezone
 
 from skool.refs import SITE, community_link, course_link, post_link, user_link
+from scraper_utils.values import to_int as _int
+from scraper_utils.text import trimmed as _text
 
 _CAMEL_RE = re.compile(r"_([a-z0-9])")
 _NS_THRESHOLD = 10 ** 15      # ns since epoch (1.7e18); seconds would be 1.7e9
@@ -64,22 +66,9 @@ def _json(value, default=None):
     if not isinstance(value, str) or not value.strip():
         return default
     try:
-        return json.loads(value)
+        return fastjson.loads(value)
     except ValueError:
         return default
-
-
-def _int(value):
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, (int, float)):
-        return int(value)
-    if isinstance(value, str):
-        try:
-            return int(float(value.replace(",", "")))
-        except ValueError:
-            return None
-    return None
 
 
 def _float(value):
@@ -100,13 +89,6 @@ def _flag(value):
     if isinstance(value, bool):
         return value
     return bool(_int(value))
-
-
-def _text(value):
-    if value is None:
-        return None
-    value = str(value).strip()
-    return value or None
 
 
 def _iso_from_ns(value):
